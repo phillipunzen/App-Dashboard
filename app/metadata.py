@@ -99,7 +99,7 @@ def fetch(url, allow_private=False, limit=1_000_000, deadline=None):
         try:
             path = urlunsplit(('', '', parts.path or '/', parts.query, ''))
             connection.request('GET', path, headers={
-                'User-Agent': 'AppHafen/1.0 (+self-hosted dashboard)',
+                'User-Agent': 'AppDashboard/1.0 (+self-hosted dashboard)',
                 'Accept': 'text/html,image/*;q=0.9,*/*;q=0.5',
                 'Accept-Encoding': 'gzip, deflate',
             })

@@ -24,7 +24,7 @@ def main():
                     raise SystemExit('Die Sicherung ist beschädigt.')
                 tables = {row[0] for row in check.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 if not {'apps', 'config', 'login_attempts'}.issubset(tables):
-                    raise SystemExit('Die Datei ist keine App-Dashboard-Datenbank.')
+                    raise SystemExit('Die Datei ist keine AppDashboard-Datenbank.')
             for suffix in ('-wal', '-shm'):
                 Path(str(database) + suffix).unlink(missing_ok=True)
             candidate.chmod(0o600)

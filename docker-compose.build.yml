@@ -1,7 +1,7 @@
 # Optionaler lokaler Build; die normale docker-compose.yml nutzt das GHCR-Image.
 # docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 services:
-  apphafen:
-    image: app-dashboard:local
+  appdashboard:
+    image: appdashboard:local
     build: .
     pull_policy: build

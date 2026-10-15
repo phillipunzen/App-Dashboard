@@ -4,8 +4,8 @@ const $ = (selector) => document.querySelector(selector);
 const icon = (name) => `<svg aria-hidden="true"><use href="/static/icons.svg#${name}"/></svg>`;
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
 const storage = {
-  get(key, fallback) { try { return JSON.parse(localStorage.getItem(`apphafen:${key}`)) ?? fallback; } catch { return fallback; } },
-  set(key, value) { try { localStorage.setItem(`apphafen:${key}`, JSON.stringify(value)); } catch { /* Browser storage is optional. */ } },
+  get(key, fallback) { try { return JSON.parse(localStorage.getItem(`appdashboard:${key}`)) ?? fallback; } catch { return fallback; } },
+  set(key, value) { try { localStorage.setItem(`appdashboard:${key}`, JSON.stringify(value)); } catch { /* Browser storage is optional. */ } },
 };
 const initialFavorites = storage.get('favorites', []);
 const state = {

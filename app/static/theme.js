@@ -1,7 +1,7 @@
 'use strict';
 
 (() => {
-  const key = 'app-dashboard:theme-preference';
+  const key = 'appdashboard:theme-preference';
   const system = matchMedia('(prefers-color-scheme: dark)');
   const choices = ['auto', 'light', 'dark'];
   const labels = {auto: 'Automatisch (Geräteeinstellung)', light: 'Hell', dark: 'Dunkel'};

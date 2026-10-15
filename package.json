@@ -1,5 +1,5 @@
 {
-  "name": "apphafen-browser-tests",
+  "name": "appdashboard-browser-tests",
   "version": "1.0.0",
   "private": true,
   "description": "Optional browser checks; the application itself has no Node.js runtime dependency.",

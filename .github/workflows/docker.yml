@@ -81,7 +81,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
-          images: ghcr.io/phillipunzen/app-dashboard
+          images: ghcr.io/phillipunzen/appdashboard
           flavor: latest=false
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
@@ -105,27 +105,27 @@ jobs:
         env:
           IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
-          docker pull "ghcr.io/phillipunzen/app-dashboard@${IMAGE_DIGEST}"
-          docker run --detach --name dashboard-smoke \
+          docker pull "ghcr.io/phillipunzen/appdashboard@${IMAGE_DIGEST}"
+          docker run --detach --name appdashboard-smoke \
             --env ADMIN_PASSWORD=container-smoke-test-password \
             --read-only --tmpfs /tmp --cap-drop ALL \
             --security-opt no-new-privileges:true \
-            "ghcr.io/phillipunzen/app-dashboard@${IMAGE_DIGEST}"
-          trap 'docker logs dashboard-smoke; docker rm --force --volumes dashboard-smoke' EXIT
+            "ghcr.io/phillipunzen/appdashboard@${IMAGE_DIGEST}"
+          trap 'docker logs appdashboard-smoke; docker rm --force --volumes appdashboard-smoke' EXIT
           for attempt in $(seq 1 30); do
-            if docker exec dashboard-smoke python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2)"; then
+            if docker exec appdashboard-smoke python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2)"; then
               break
             fi
             sleep 2
           done
-          docker exec dashboard-smoke python -c "import urllib.request; page=urllib.request.urlopen('http://127.0.0.1:8080/', timeout=3).read(); assert b'App Dashboard' in page"
-          docker image inspect "ghcr.io/phillipunzen/app-dashboard@${IMAGE_DIGEST}" \
+          docker exec appdashboard-smoke python -c "import urllib.request; page=urllib.request.urlopen('http://127.0.0.1:8080/', timeout=3).read(); assert b'AppDashboard' in page"
+          docker image inspect "ghcr.io/phillipunzen/appdashboard@${IMAGE_DIGEST}" \
             --format '{{ index .Config.Labels "org.opencontainers.image.source" }}'
       - name: Published image
         env:
           IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
-          echo '### App Dashboard image' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Image: `ghcr.io/phillipunzen/app-dashboard`' >> "$GITHUB_STEP_SUMMARY"
+          echo '### AppDashboard image' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Image: `ghcr.io/phillipunzen/appdashboard`' >> "$GITHUB_STEP_SUMMARY"
           echo "Digest: \`${IMAGE_DIGEST}\`" >> "$GITHUB_STEP_SUMMARY"
           echo 'Platforms: `linux/amd64`, `linux/arm64`' >> "$GITHUB_STEP_SUMMARY"

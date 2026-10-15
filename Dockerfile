@@ -1,6 +1,6 @@
 FROM python:3.13-slim
-LABEL org.opencontainers.image.title="App Dashboard" \
-      org.opencontainers.image.description="Self-hosted app dashboard with automatic favicons and a protected admin interface" \
+LABEL org.opencontainers.image.title="AppDashboard" \
+      org.opencontainers.image.description="AppDashboard application launcher with automatic favicons and a protected admin interface" \
       org.opencontainers.image.source="https://github.com/phillipunzen/App-Dashboard" \
       org.opencontainers.image.url="https://github.com/phillipunzen/App-Dashboard"
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -9,11 +9,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && groupadd --gid 10001 apphafen \
-    && useradd --uid 10001 --gid apphafen --no-create-home apphafen \
-    && mkdir /data && chown apphafen:apphafen /data
-COPY --chown=apphafen:apphafen app ./app
-USER apphafen
+    && groupadd --gid 10001 appdashboard \
+    && useradd --uid 10001 --gid appdashboard --no-create-home appdashboard \
+    && mkdir /data && chown appdashboard:appdashboard /data
+COPY --chown=appdashboard:appdashboard app ./app
+USER appdashboard
 VOLUME ["/data"]
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \

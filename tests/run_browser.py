@@ -12,7 +12,7 @@ from pathlib import Path
 
 def main():
     project = Path(__file__).resolve().parent.parent
-    with tempfile.TemporaryDirectory(prefix='app-dashboard-e2e-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='appdashboard-e2e-') as temporary:
         with socket.socket() as listener:
             listener.bind(('127.0.0.1', 0))
             port = listener.getsockname()[1]
@@ -21,7 +21,7 @@ def main():
         env = {**os.environ, 'ADMIN_PASSWORD': password, 'ADMIN_USERNAME': 'admin',
                'DATABASE_PATH': str(Path(temporary) / 'dashboard.sqlite3'),
                'SECURE_COOKIE': 'false', 'TRUSTED_PROXY_HOPS': '0',
-               'PUBLIC_ORIGIN': '', 'DASHBOARD_TITLE': 'App Dashboard'}
+               'PUBLIC_ORIGIN': '', 'DASHBOARD_TITLE': 'AppDashboard'}
         env.pop('ADMIN_PASSWORD_FILE', None)
         with (Path(temporary) / 'server.log').open('w+') as log:
             server = subprocess.Popen(
@@ -42,7 +42,7 @@ def main():
                     raise RuntimeError('The disposable test server did not become ready.')
                 result = subprocess.run(
                     ['npm', 'run', 'test:browser'], cwd=project,
-                    env={**os.environ, 'APPHAFEN_TEST_URL': url, 'APPHAFEN_TEST_PASSWORD': password},
+                    env={**os.environ, 'APPDASHBOARD_TEST_URL': url, 'APPDASHBOARD_TEST_PASSWORD': password},
                 )
                 if result.returncode:
                     raise SystemExit(result.returncode)

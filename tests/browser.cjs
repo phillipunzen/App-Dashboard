@@ -2,9 +2,9 @@
 const {chromium} = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
-const url = process.env.APPHAFEN_TEST_URL || 'http://127.0.0.1:8131';
-const password = process.env.APPHAFEN_TEST_PASSWORD;
-if (!password) throw new Error('APPHAFEN_TEST_PASSWORD must be set for a disposable test instance.');
+const url = process.env.APPDASHBOARD_TEST_URL || 'http://127.0.0.1:8131';
+const password = process.env.APPDASHBOARD_TEST_PASSWORD;
+if (!password) throw new Error('APPDASHBOARD_TEST_PASSWORD must be set for a disposable test instance.');
 
 (async () => {
   const browser = await chromium.launch({headless: true, args: ['--no-sandbox']});
@@ -78,7 +78,7 @@ if (!password) throw new Error('APPHAFEN_TEST_PASSWORD must be set for a disposa
     assert.equal(await visitor.locator('.app').count(), 7);
     assert.equal(await visitor.locator('#sidebar, .stats, [data-action="add"], [data-edit], dialog').count(), 0);
     assert.equal(await visitor.getByRole('link', {name: 'Meine Nextcloud in neuem Tab öffnen', exact: true}).getAttribute('target'), '_blank');
-    assert.match(await visitor.title(), /App Dashboard/);
+    assert.match(await visitor.title(), /AppDashboard/);
     assert.equal(await visitor.locator('html').getAttribute('data-theme-preference'), 'auto');
     const info = visitor.getByRole('button', {name: 'Infos zu Meine Nextcloud', exact: true});
     const app = info.locator('..');
@@ -177,7 +177,7 @@ if (!password) throw new Error('APPHAFEN_TEST_PASSWORD must be set for a disposa
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('link', {name: 'Sammlung als JSON exportieren'}).click();
     const download = await downloadPromise;
-    assert.equal(download.suggestedFilename(), 'apphafen-export.json');
+    assert.equal(download.suggestedFilename(), 'appdashboard-export.json');
     await page.locator('#logout-button').click();
     await page.locator('#admin-dialog').waitFor({state: 'hidden'});
     assert.equal(await page.locator('[data-edit]').count(), 0);

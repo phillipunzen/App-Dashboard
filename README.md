@@ -1,4 +1,4 @@
-# App Dashboard
+# AppDashboard
 
 Ein schlankes, selbst gehostetes Dashboard für deine Anwendungen. Öffentlich sichtbare App-Kacheln mit Logo, Beschreibung und direktem Link; die Verwaltung ist durch einen Admin-Login geschützt. Komplett auf Deutsch, ohne externe Schriftarten, Tracking oder Favicon-Dienste.
 
@@ -18,8 +18,8 @@ Eine neue Installation enthält bewusst keine Beispiel-Apps. Die Nutzeransicht z
 ## Schnellstart mit Docker Compose
 
 ```bash
-git clone https://github.com/phillipunzen/App-Dashboard.git
-cd App-Dashboard
+git clone https://github.com/phillipunzen/App-Dashboard.git AppDashboard
+cd AppDashboard
 cp .env.example .env
 chmod 600 .env
 ```
@@ -52,16 +52,16 @@ Für einen vorübergehenden Test ausschließlich über lokales HTTP: `SECURE_COO
 Die `docker-compose.yml` verwendet das fertige Image:
 
 ```yaml
-image: ghcr.io/phillipunzen/app-dashboard:latest
+image: ghcr.io/phillipunzen/appdashboard:latest
 ```
 
-Image: [GitHub Container Registry](https://github.com/users/phillipunzen/packages/container/package/app-dashboard). Unterstützt werden `linux/amd64` und `linux/arm64`.
+Image: [GitHub Container Registry](https://github.com/users/phillipunzen/packages/container/package/appdashboard). Unterstützt werden `linux/amd64` und `linux/arm64`.
 
 Der [GitHub-Actions-Workflow](https://github.com/phillipunzen/App-Dashboard/actions/workflows/docker.yml) führt vor jeder Veröffentlichung die Backend- und Browserprüfungen aus, baut beide Architekturen, veröffentlicht die Images und prüft den gestarteten Container. Auf `main` wird `latest` aktualisiert; zusätzlich gibt es einen `sha-…`-Tag pro Commit. Git-Tags wie `v1.2.3` erzeugen die Image-Tags `1.2.3` und `1.2`. Pull Requests führen die Tests ohne Veröffentlichung aus. Die Authentifizierung für die Veröffentlichung erfolgt über den automatisch bereitgestellten `GITHUB_TOKEN`; zusätzliche Registry-Zugangsdaten sind im Repository nicht erforderlich.
 
 GitHub legt neue Container-Pakete zunächst privat an. Für einen Download ohne Anmeldung das Paket einmalig unter **Package settings → Change visibility → Public** freigeben. Wenn es privat bleiben soll, vor `docker compose pull` mit `docker login ghcr.io -u phillipunzen` anmelden; als Passwort einen eigenen GitHub-Token mit `read:packages` verwenden. Siehe [GHCR-Dokumentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
-Für eine feste Version `APP_DASHBOARD_IMAGE` in `.env` anpassen. Updates laden und aktivieren:
+Für eine feste Version `APPDASHBOARD_IMAGE` in `.env` anpassen. Updates laden und aktivieren:
 
 ```bash
 docker compose pull
@@ -74,7 +74,23 @@ Ein lokaler Build ist weiterhin optional möglich:
 docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
-Service-Name und Volume heißen aus Kompatibilitätsgründen weiter `apphafen` bzw. `apphafen_data`, damit eine vorhandene Installation ihre Daten beim Wechsel auf das veröffentlichte Image weiter nutzt.
+Compose-Projekt, Service und Container heißen `appdashboard`. Die Daten liegen im Volume `appdashboard_data`. Image, Linux-Benutzer, Exporte und interne Bezeichnungen verwenden ebenfalls `appdashboard`. Der GitHub-Repository-Link bleibt die bestehende Adresse.
+
+## Bestehende Installation auf die neuen Namen umstellen
+
+Bei einer bestehenden Installation das bisherige Daten-Volume einmalig kopieren, bevor die neue Compose-Konfiguration gestartet wird. So werden Einträge, Logos und Sitzungsschlüssel übernommen. Die Quelle bleibt erhalten und eine bereits vorhandene Ziel-Datenbank wird nicht überschrieben.
+
+1. Eine Datenbanksicherung erstellen und die Namen des bisherigen Containers und Volumes notieren (`docker ps`, `docker volume ls`).
+2. Das neue Image laden: `docker pull ghcr.io/phillipunzen/appdashboard:latest`.
+3. Den bisherigen Container stoppen: `docker stop <bisheriger-container>`.
+4. Migration aus dem aktualisierten Repository starten:
+
+```bash
+python3 scripts/migrate_volume.py --source <bisheriges-daten-volume>
+docker compose up -d
+```
+
+Danach unter `/` und `/admin` prüfen, ob die Einträge vorhanden sind. Erst nach erfolgreicher Prüfung den gestoppten bisherigen Container und sein Volume entfernen. Verwendet der Reverseproxy einen Docker-DNS-Namen, seinen Upstream auf `http://appdashboard:8080` anpassen. Die Portfreigabe auf dem Host bleibt unverändert. Eigene Compose-Overrides ebenfalls auf den Service `appdashboard` umstellen. Eine zuvor konfigurierte Image-Variable heißt jetzt `APPDASHBOARD_IMAGE`.
 
 ## Reverseproxy
 
@@ -94,11 +110,11 @@ location / {
 
 Für Nginx Proxy Manager: Forward Hostname/IP = die vom Proxy erreichbare Docker-Host-IP, Forward Port = gewählter Host-Port, Scheme = `http`; SSL für die öffentliche Domain aktivieren. Eine an `127.0.0.1` gebundene Freigabe ist nur für einen Proxy direkt auf demselben Host erreichbar.
 
-**Wenn dein Reverseproxy selbst in Docker läuft**, kannst du beide Dienste in ein gemeinsames Docker-Netz hängen. Der Upstream lautet dann `http://apphafen:8080` und eine Portfreigabe ist nicht erforderlich. Beispiel einer lokalen `docker-compose.override.yml` (Netznamen ersetzen):
+**Wenn dein Reverseproxy selbst in Docker läuft**, kannst du beide Dienste in ein gemeinsames Docker-Netz hängen. Der Upstream lautet dann `http://appdashboard:8080` und eine Portfreigabe ist nicht erforderlich. Beispiel einer lokalen `docker-compose.override.yml` (Netznamen ersetzen):
 
 ```yaml
 services:
-  apphafen:
+  appdashboard:
     networks:
       - proxy
 networks:
@@ -107,7 +123,7 @@ networks:
     name: dein-vorhandenes-proxy-netz
 ```
 
-Damit ist der Dienst über den internen DNS-Namen `apphafen` im gemeinsamen Netz erreichbar. Die bestehende Loopback-Portfreigabe kann bestehen bleiben. Bei einem Proxy auf einem anderen Rechner `BIND_ADDRESS` auf die interne Docker-Host-IP setzen und den Host-Port nur für diesen Proxy freigeben.
+Damit ist der Dienst über den internen DNS-Namen `appdashboard` im gemeinsamen Netz erreichbar. Die bestehende Loopback-Portfreigabe kann bestehen bleiben. Bei einem Proxy auf einem anderen Rechner `BIND_ADDRESS` auf die interne Docker-Host-IP setzen und den Host-Port nur für diesen Proxy freigeben.
 
 `TRUSTED_PROXY_HOPS=1` gilt für genau einen vertrauenswürdigen Proxy. Für direkten Zugriff ohne Proxy `0` setzen. Der Proxy muss eingehende Forwarded-Header selbst setzen bzw. bereinigen. `PUBLIC_ORIGIN` ist die öffentliche Adresse inklusive `https://`, ohne Pfad und ohne abschließenden Slash.
 
@@ -115,7 +131,7 @@ Die öffentliche Übersicht enthält alle gespeicherten URLs, Namen, Beschreibun
 
 ## Automatische Logos und Metadaten
 
-Der Abruf erfolgt ausschließlich nach Admin-Anmeldung. App Dashboard liest den HTML-Titel, die Meta-Beschreibung und Icon-Verweise; danach versucht es `/favicon.ico`. Relative Icon-URLs und HTTP-Weiterleitungen werden unterstützt. Logos werden als kleine PNGs im Volume gespeichert und beim späteren Seitenbesuch von App Dashboard ausgeliefert. Besucher müssen daher keine externen Favicon-Dienste kontaktieren.
+Der Abruf erfolgt ausschließlich nach Admin-Anmeldung. AppDashboard liest den HTML-Titel, die Meta-Beschreibung und Icon-Verweise; danach versucht es `/favicon.ico`. Relative Icon-URLs und HTTP-Weiterleitungen werden unterstützt. Logos werden als kleine PNGs im Volume gespeichert und beim späteren Seitenbesuch von AppDashboard ausgeliefert. Besucher müssen daher keine externen Favicon-Dienste kontaktieren.
 
 Nicht jede Anwendung stellt lesbare Metadaten bereit: Login-Schutz, reine JavaScript-Seiten, selbst signierte TLS-Zertifikate oder ausschließlich SVG-basierte Logos können den Abruf verhindern. Der Eintrag lässt sich trotzdem speichern; Name und Beschreibung können manuell eingegeben und PNG-, JPEG-, WebP-, GIF- oder ICO-Logos bis 250 KB hochgeladen werden. SVG-Dateien werden nicht übernommen. Fehlt ein Logo, erscheint ein farbiges Buchstaben-Icon.
 
@@ -133,8 +149,9 @@ Damit werden RFC1918-Netze und IPv6-ULA freigegeben. Loopback, Link-Local und Cl
 | --- | --- | --- |
 | `ADMIN_USERNAME` | `admin` | Admin-Benutzername |
 | `ADMIN_PASSWORD` | kein Standard | Mindestens 12 Zeichen; ohne Passwort startet die App nicht |
-| `DASHBOARD_TITLE` | `App Dashboard` | Name oben links und im Seitentitel |
-| `APP_DASHBOARD_IMAGE` | `ghcr.io/phillipunzen/app-dashboard:latest` | Veröffentlichtes Image; alternativ Version oder Digest |
+| `DASHBOARD_TITLE` | `AppDashboard` | Name oben links und im Seitentitel |
+| `APPDASHBOARD_IMAGE` | `ghcr.io/phillipunzen/appdashboard:latest` | Veröffentlichtes Image; alternativ Version oder Digest |
+| `APPDASHBOARD_DATA_VOLUME` | `appdashboard_data` | Name des persistenten Docker-Volumes |
 | `PORT` | `8080` | Auf dem Host veröffentlichter Port |
 | `BIND_ADDRESS` | `127.0.0.1` | Bind-Adresse auf dem Host |
 | `PUBLIC_ORIGIN` | leer | Öffentliche HTTPS-Adresse, z. B. `https://apps.example.de` |
@@ -149,13 +166,13 @@ Für eigene Docker-Konfigurationen unterstützt das Image alternativ `ADMIN_PASS
 
 ## Sichern und wiederherstellen
 
-App-Daten, Logos und der Sitzungsschlüssel liegen im Volume `apphafen_data` (Compose ergänzt den Projektnamen). Ein Container-Neustart oder Rebuild löscht diese Daten nicht. `docker compose down -v` entfernt ausdrücklich auch das Volume und damit alle Daten.
+App-Daten, Logos und der Sitzungsschlüssel liegen im Volume `appdashboard_data` (der Name ist unabhängig vom Checkout-Verzeichnis). Ein Container-Neustart oder Rebuild löscht diese Daten nicht. `docker compose down -v` entfernt ausdrücklich auch das Volume und damit alle Daten.
 
 Im laufenden Betrieb eine konsistente SQLite-Sicherung erstellen:
 
 ```bash
 mkdir -p backups
-docker compose exec -T apphafen python -m app.backup > backups/apphafen.sqlite3
+docker compose exec -T appdashboard python -m app.backup > backups/appdashboard.sqlite3
 ```
 
 Das Skript nutzt die SQLite-Backup-API, sodass auch bei eingeschaltetem WAL-Modus eine konsistente einzelne Datei entsteht. Sicherungen enthalten alle öffentlichen App-Einträge und den Sitzungsschlüssel; vertraulich aufbewahren. `.env` separat sichern.
@@ -163,8 +180,8 @@ Das Skript nutzt die SQLite-Backup-API, sodass auch bei eingeschaltetem WAL-Modu
 Wiederherstellen (ersetzt die vorhandene Sammlung; vorher sichern):
 
 ```bash
-docker compose stop apphafen
-docker compose run --rm -T --no-deps apphafen python -m app.backup --restore < backups/apphafen.sqlite3
+docker compose stop appdashboard
+docker compose run --rm -T --no-deps appdashboard python -m app.backup --restore < backups/appdashboard.sqlite3
 docker compose up -d
 ```
 
@@ -174,7 +191,7 @@ Alternativ steht in **Verwaltung → Sammlung als JSON exportieren** ein lesbare
 
 ```bash
 docker compose ps
-docker compose logs --tail=100 apphafen
+docker compose logs --tail=100 appdashboard
 docker compose pull
 docker compose up -d
 ```

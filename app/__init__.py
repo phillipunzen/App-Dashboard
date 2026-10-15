@@ -32,7 +32,7 @@ def create_app(test_config=None):
         PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
         MAX_CONTENT_LENGTH=512_000,
         ALLOW_PRIVATE_METADATA=os.environ.get('ALLOW_PRIVATE_METADATA', 'false').lower() == 'true',
-        DASHBOARD_TITLE=os.environ.get('DASHBOARD_TITLE', 'App Dashboard')[:60],
+        DASHBOARD_TITLE=os.environ.get('DASHBOARD_TITLE', 'AppDashboard')[:60],
         PUBLIC_ORIGIN=os.environ.get('PUBLIC_ORIGIN', '').rstrip('/'),
     )
     password_file = os.environ.get('ADMIN_PASSWORD_FILE')
@@ -270,6 +270,6 @@ def create_app(test_config=None):
             data['icon'] = base64.b64encode(data['icon']).decode() if data['icon'] else None
             records.append(data)
         raw = json.dumps({'version': 1, 'apps': records}, ensure_ascii=False, indent=2).encode()
-        return send_file(io.BytesIO(raw), mimetype='application/json', as_attachment=True, download_name='apphafen-export.json')
+        return send_file(io.BytesIO(raw), mimetype='application/json', as_attachment=True, download_name='appdashboard-export.json')
 
     return app
