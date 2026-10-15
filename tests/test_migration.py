@@ -40,6 +40,22 @@ class MigrationTests(unittest.TestCase):
         self.assertEqual(snapshot(self.source), before)
         self.assertEqual(self.target.stat().st_mode & 0o777, 0o600)
 
+    def test_uncheckpointed_wal_records_are_preserved(self):
+        with closing(sqlite3.connect(self.source)) as writer:
+            writer.execute('PRAGMA wal_autocheckpoint=0')
+            writer.execute('INSERT INTO apps(name,url) VALUES(?,?)', ('Noch im WAL', 'https://wal.example.org/'))
+            writer.commit()
+            wal = Path(str(self.source) + '-wal')
+            self.assertTrue(wal.exists())
+            source_bytes = self.source.read_bytes()
+            wal_bytes = wal.read_bytes()
+            self.assertEqual(copy_database(self.source, self.target), 2)
+            self.assertEqual(self.source.read_bytes(), source_bytes)
+            self.assertEqual(wal.read_bytes(), wal_bytes)
+            with closing(sqlite3.connect(self.target)) as target:
+                names = {row[0] for row in target.execute('SELECT name FROM apps')}
+            self.assertEqual(names, {'Meine Cloud', 'Noch im WAL'})
+
     def test_existing_target_is_never_overwritten(self):
         self.target.parent.mkdir()
         self.target.write_bytes(b'existing-data')
