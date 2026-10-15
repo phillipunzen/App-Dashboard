@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+*.sqlite3*
+data/
+secrets/
+artifacts/
+node_modules/
+backups/
