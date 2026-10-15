@@ -1,0 +1,27 @@
+services:
+  apphafen:
+    image: ${APP_DASHBOARD_IMAGE:-ghcr.io/phillipunzen/app-dashboard:latest}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-8080}:8080"
+    environment:
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Bitte ADMIN_PASSWORD in .env setzen (mindestens 12 Zeichen)}
+      DASHBOARD_TITLE: ${DASHBOARD_TITLE:-App Dashboard}
+      SECURE_COOKIE: ${SECURE_COOKIE:-true}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-}
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-0}
+      ALLOW_PRIVATE_METADATA: ${ALLOW_PRIVATE_METADATA:-false}
+    volumes:
+      - apphafen_data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 15s
+
+volumes:
+  apphafen_data:

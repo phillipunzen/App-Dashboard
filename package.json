@@ -1,0 +1,8 @@
+{
+  "name": "apphafen-browser-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional browser checks; the application itself has no Node.js runtime dependency.",
+  "scripts": {"test:browser": "node tests/browser.cjs"},
+  "devDependencies": {"playwright": "1.64.0"}
+}

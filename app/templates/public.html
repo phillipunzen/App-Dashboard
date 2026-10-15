@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087f73">
+  <meta name="description" content="Alle Anwendungen an einem Ort. Finde und öffne die App, die du brauchst.">
+  <title>{{ title }} · Anwendungen</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <script src="/static/theme.js"></script>
+  <link rel="stylesheet" href="/static/public.css">
+  <script src="/static/public.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#applications">Zum Inhalt springen</a>
+  <div class="dashboard">
+    <header class="header">
+      <a class="brand" href="/" aria-label="{{ title }} Startseite"><img class="brand-logo" src="/static/logo.svg" width="36" height="36" alt=""><span>{{ title }}</span></a>
+      <button class="theme-toggle" id="theme-toggle" data-theme-toggle aria-label="Design: Automatisch (Geräteeinstellung)"><svg aria-hidden="true"><use href="/static/icons.svg#moon"/></svg></button>
+    </header>
+    <main id="applications">
+      <div class="intro">
+        <div><h1>Deine Anwendungen.</h1><p>Alles an einem Ort. Mit einem Klick geöffnet.</p></div>
+        {% if apps %}<form class="search" role="search"><svg aria-hidden="true"><use href="/static/icons.svg#search"/></svg><input id="app-search" type="search" placeholder="App suchen …" aria-label="Apps durchsuchen" autocomplete="off"></form>{% endif %}
+      </div>
+      {% if apps %}
+      <div class="apps" id="apps">
+        {% for app in apps %}
+        <article class="app" data-search="{{ app.name }} {{ app.description }} {{ app.category }} {{ app.url }}">
+          <a class="app-link" href="{{ app.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ app.name }} in neuem Tab öffnen">
+            <span class="app-logo {{ app.color }}" aria-hidden="true">{% if app.icon_url %}<img src="{{ app.icon_url }}" alt="" loading="lazy">{% else %}{{ app.name[:1]|upper }}{% endif %}</span>
+            <span class="app-summary"><h2>{{ app.name }}</h2>{% if app.description %}<span class="app-excerpt">{{ app.description }}</span>{% endif %}</span>
+          </a>
+          <button class="app-info" type="button" aria-label="Infos zu {{ app.name }}" aria-expanded="false" aria-controls="app-details-{{ app.id }}"><svg aria-hidden="true"><use href="/static/icons.svg#info"/></svg></button>
+          <div class="app-details" id="app-details-{{ app.id }}" hidden>
+            <p>{{ app.description or 'Für diese Anwendung wurde noch keine Beschreibung hinterlegt.' }}</p>
+            {% if app.category %}<span class="detail-category">{{ app.category }}</span>{% endif %}
+            <a class="detail-url" href="{{ app.url }}" target="_blank" rel="noopener noreferrer">{{ app.url }}<svg aria-hidden="true"><use href="/static/icons.svg#external"/></svg></a>
+            <a class="detail-open" href="{{ app.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ app.name }} aus den Details öffnen">App öffnen<svg aria-hidden="true"><use href="/static/icons.svg#arrow-right"/></svg></a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      <p class="no-results" id="no-results" role="status" hidden>Keine passende Anwendung gefunden.</p>
+      {% else %}
+      <div class="empty"><svg aria-hidden="true"><use href="/static/icons.svg#grid"/></svg><h2>Noch keine Anwendungen vorhanden.</h2><p>Hier findest du bald deine Apps.</p></div>
+      {% endif %}
+    </main>
+    <footer><span>{{ title }}</span><a href="/admin">Verwaltung</a></footer>
+  </div>
+</body>
+</html>
